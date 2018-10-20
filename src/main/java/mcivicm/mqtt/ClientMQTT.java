@@ -1,3 +1,5 @@
+package mcivicm.mqtt;
+
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -7,7 +9,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class ClientMQTT {
-    public static final String HOST = "tcp://localhost:1883";
+    public static final String HOST = "tcp://10.1.1.220:1883";
     public static final String TOPIC = "mtopic";
     private static final String clientid = "client12";
     private MqttClient client;

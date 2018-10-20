@@ -1,9 +1,11 @@
+package mcivicm.mqtt;
+
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class ServerMQTT {
     //tcp://MQTT安装的服务器地址:MQTT定义的端口号
-    public static final String HOST = "tcp://localhost:1883";
+    public static final String HOST = "tcp://10.1.1.220:1883";
     //定义一个主题
     public static final String TOPIC = "mtopic";
     //定义MQTT的ID，可以在MQTT服务配置中指定
