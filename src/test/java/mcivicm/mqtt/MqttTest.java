@@ -6,7 +6,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Scanner;
 
-public class ClientTest {
+public class MqttTest {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("enter host: ");
@@ -45,7 +45,10 @@ public class ClientTest {
                 if (disposable[0] != null) {
                     disposable[0].dispose();
                 }
+                MQTT.instance().disconnect().blockingAwait();
                 break;
+            } else {
+                MQTT.instance().publish(topic, line, 1).blockingAwait();
             }
         }
         System.exit(1);
