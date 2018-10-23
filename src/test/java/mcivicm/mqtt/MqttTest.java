@@ -45,6 +45,7 @@ public class MqttTest {
                 if (disposable[0] != null) {
                     disposable[0].dispose();
                 }
+                MQTT.instance().unsubscribe(topic).blockingAwait();
                 MQTT.instance().disconnect().blockingAwait();
                 break;
             } else {
