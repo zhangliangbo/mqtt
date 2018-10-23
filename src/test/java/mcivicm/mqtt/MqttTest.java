@@ -13,11 +13,13 @@ public class MqttTest {
         String host = scanner.nextLine();
         System.out.println("enter id: ");
         String id = scanner.nextLine();
-        System.out.println("enter topic: ");
-        String topic = scanner.nextLine();
+        System.out.println("enter publish topic: ");
+        String publish_topic = scanner.nextLine();
+        System.out.println("enter subscribe topic: ");
+        String subscribe_topic = scanner.nextLine();
         MQTT.instance().connect(new IOptions.Builder().setHost(host).setId(id).build()).blockingAwait();
         final Disposable[] disposable = new Disposable[1];
-        MQTT.instance().subscribe(topic, 1).subscribe(new Observer<MqttMessage>() {
+        MQTT.instance().subscribe(subscribe_topic, 1).subscribe(new Observer<MqttMessage>() {
             @Override
             public void onSubscribe(Disposable d) {
                 disposable[0] = d;
@@ -25,7 +27,7 @@ public class MqttTest {
 
             @Override
             public void onNext(MqttMessage mqttMessage) {
-                System.out.println(new String(mqttMessage.getPayload()));
+                System.out.println("receive: " + new String(mqttMessage.getPayload()));
             }
 
             @Override
@@ -45,11 +47,11 @@ public class MqttTest {
                 if (disposable[0] != null) {
                     disposable[0].dispose();
                 }
-                MQTT.instance().unsubscribe(topic).blockingAwait();
+                MQTT.instance().unsubscribe(publish_topic).blockingAwait();
                 MQTT.instance().disconnect().blockingAwait();
                 break;
             } else {
-                MQTT.instance().publish(topic, line, 1).blockingAwait();
+                MQTT.instance().publish(publish_topic, line, 1).blockingAwait();
             }
         }
         System.exit(1);
