@@ -6,7 +6,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Scanner;
 
-public class MqttTest {
+public class Client {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("enter host: ");
