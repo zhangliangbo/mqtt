@@ -16,20 +16,4 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:2.2.2"
 }
 
-
-jar {
-    manifest {
-        attributes 'Main-Class': "mcivicm.mqtt.Client"
-    }
-
-    from {
-        //添加依懒到打包文件
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-
-}
-
-
-
-
 mainClassName = 'mcivicm.mqtt.Client'
