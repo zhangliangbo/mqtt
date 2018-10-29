@@ -53,7 +53,7 @@ public interface IOptions {
         private int connectionTimeout = 6;
         private int keepAliveInterval = 20;
 
-        IOptions build() {
+        public IOptions build() {
             return new IOptions() {
                 @Override
                 public String getHost() {
