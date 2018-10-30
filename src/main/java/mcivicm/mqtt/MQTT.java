@@ -27,6 +27,7 @@ public class MQTT {
 
     private IMqttClient iMqttClient;
     private IOptions iOptions;
+    private MqttCallback mqttCallback;
 
     /**
      * 连接服务器
@@ -39,6 +40,10 @@ public class MQTT {
             @Override
             public void run() throws Exception {
                 iMqttClient = new MqttClient(iOptions.getHost(), iOptions.getClientId(), new MemoryPersistence());
+                //设置mqtt回调
+                if (mqttCallback != null) {
+                    iMqttClient.setCallback(mqttCallback);
+                }
                 MqttConnectOptions options = new MqttConnectOptions();
                 options.setUserName(iOptions.getUsername());
                 options.setPassword(iOptions.getPassword().toCharArray());
@@ -114,6 +119,20 @@ public class MQTT {
                 iMqttClient.subscribe(topic);
             }
         });
+    }
+
+    /**
+     * 设置mqtt回调
+     *
+     * @param callback
+     */
+    public void setMqttCallback(MqttCallback callback) {
+        if (iMqttClient == null) {
+            //没有初始化先存着
+            mqttCallback = callback;
+        } else {
+            iMqttClient.setCallback(callback);
+        }
     }
 
 }
