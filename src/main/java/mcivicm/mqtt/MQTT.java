@@ -47,7 +47,7 @@ public class MQTT {
                 MqttConnectOptions options = new MqttConnectOptions();
                 options.setUserName(iOptions.getUsername());
                 options.setPassword(iOptions.getPassword().toCharArray());
-                options.setCleanSession(false);
+                options.setCleanSession(iOptions.getCleanSession());
                 options.setConnectionTimeout(iOptions.getConnectionTimeout());
                 options.setKeepAliveInterval(iOptions.getKeepAliveInterval());
                 iMqttClient.connect(options);

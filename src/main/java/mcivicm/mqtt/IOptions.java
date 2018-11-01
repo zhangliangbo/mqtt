@@ -24,6 +24,14 @@ public interface IOptions {
     String getUsername();
 
     /**
+     * 是否清空会话
+     *
+     * @return
+     */
+    boolean getCleanSession();
+
+
+    /**
      * 密码
      *
      * @return
@@ -52,6 +60,7 @@ public interface IOptions {
         private String password = "public";
         private int connectionTimeout = 6;
         private int keepAliveInterval = 20;
+        private boolean cleanSession=true;
 
         public IOptions build() {
             return new IOptions() {
@@ -84,6 +93,11 @@ public interface IOptions {
                 public int getKeepAliveInterval() {
                     return keepAliveInterval;
                 }
+
+                @Override
+                public boolean getCleanSession() {
+                    return cleanSession;
+                }
             };
         }
 
@@ -114,6 +128,11 @@ public interface IOptions {
 
         public Builder setKeepAliveInterval(int keepAliveInterval) {
             this.keepAliveInterval = keepAliveInterval;
+            return this;
+        }
+
+        public Builder setCleanSession(boolean cleanSession) {
+            this.cleanSession = cleanSession;
             return this;
         }
     }
