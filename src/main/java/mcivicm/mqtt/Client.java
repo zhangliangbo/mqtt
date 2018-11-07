@@ -51,7 +51,11 @@ public class Client {
                 MQTT.instance().disconnect().blockingAwait();
                 break;
             } else {
-                MQTT.instance().publish(publish_topic, line, 1).blockingAwait();
+                if ("".equals(line)) {
+                    MQTT.instance().publish(publish_topic, null, 1).blockingAwait();
+                } else {
+                    MQTT.instance().publish(publish_topic, line, 1).blockingAwait();
+                }
             }
         }
         System.exit(1);

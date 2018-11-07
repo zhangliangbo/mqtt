@@ -77,11 +77,40 @@ public class MQTT {
      * @return
      */
     public Completable publish(String topic, String text, int qos) {
+        return publish(topic, text, qos, false);
+    }
+
+    /**
+     * 发布主题
+     *
+     * @param topic
+     * @param text
+     * @return
+     */
+    public Completable publish(String topic, String text, int qos, boolean retained) {
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
                 MqttTopic mt = iMqttClient.getTopic(topic);
-                MqttDeliveryToken token = mt.publish(text.getBytes(), qos, true);
+                MqttDeliveryToken token = mt.publish(text == null ? new byte[0] : text.getBytes(), qos, retained);
+                token.waitForCompletion();
+            }
+        });
+    }
+
+    /**
+     * 发布主题
+     *
+     * @param topic
+     * @param message
+     * @return
+     */
+    public Completable publish(String topic, MqttMessage message) {
+        return Completable.fromAction(new Action() {
+            @Override
+            public void run() throws Exception {
+                MqttTopic mt = iMqttClient.getTopic(topic);
+                MqttDeliveryToken token = mt.publish(message);
                 token.waitForCompletion();
             }
         });
