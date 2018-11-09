@@ -2,7 +2,7 @@ package mcivicm.mqtt;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Scanner;
