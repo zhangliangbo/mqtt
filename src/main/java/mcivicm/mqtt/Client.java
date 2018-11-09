@@ -2,6 +2,7 @@ package mcivicm.mqtt;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import javafx.util.Pair;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Scanner;
@@ -19,15 +20,15 @@ public class Client {
         String subscribe_topic = scanner.nextLine();
         MQTT.instance().connect(new IOptions.Builder().setHost(host).setId(id).build()).blockingAwait();
         final Disposable[] disposable = new Disposable[1];
-        MQTT.instance().subscribe(subscribe_topic, 1).subscribe(new Observer<MqttMessage>() {
+        MQTT.instance().subscribeWithTopic(subscribe_topic, 1).subscribe(new Observer<Pair<String, MqttMessage>>() {
             @Override
             public void onSubscribe(Disposable d) {
                 disposable[0] = d;
             }
 
             @Override
-            public void onNext(MqttMessage mqttMessage) {
-                System.out.println("receive: " + new String(mqttMessage.getPayload()));
+            public void onNext(Pair<String, MqttMessage> pair) {
+                System.out.println(pair.getKey() + "-" + new String(pair.getValue().getPayload()));
             }
 
             @Override

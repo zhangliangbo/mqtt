@@ -6,7 +6,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
@@ -146,7 +146,7 @@ public class MQTT {
                         iMqttClient.subscribe(topic, qos, new IMqttMessageListener() {
                             @Override
                             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                                emitter.onNext(new Pair<>(topic, message));
+                                emitter.onNext(Pair.of(topic, message));
                             }
                         });
                     }
