@@ -5,6 +5,8 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.Function;
+import javafx.util.Pair;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
@@ -122,14 +124,29 @@ public class MQTT {
      * @return
      */
     public Observable<MqttMessage> subscribe(String topic, int qos) {
-        return Observable
-                .create(new ObservableOnSubscribe<MqttMessage>() {
+        return subscribeWithTopic(topic, qos)
+                .map(new Function<Pair<String, MqttMessage>, MqttMessage>() {
                     @Override
-                    public void subscribe(ObservableEmitter<MqttMessage> emitter) throws Exception {
+                    public MqttMessage apply(Pair<String, MqttMessage> stringMqttMessagePair) throws Exception {
+                        return stringMqttMessagePair.getValue();
+                    }
+                });
+    }
+
+    /**
+     * 订阅某个主题
+     *
+     * @return
+     */
+    public Observable<Pair<String, MqttMessage>> subscribeWithTopic(String topic, int qos) {
+        return Observable
+                .create(new ObservableOnSubscribe<Pair<String, MqttMessage>>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<Pair<String, MqttMessage>> emitter) throws Exception {
                         iMqttClient.subscribe(topic, qos, new IMqttMessageListener() {
                             @Override
                             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                                emitter.onNext(message);
+                                emitter.onNext(new Pair<>(topic, message));
                             }
                         });
                     }
