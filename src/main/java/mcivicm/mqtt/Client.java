@@ -31,7 +31,7 @@ public class Client {
             File[] activeFiles = new File(jarDir).listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.contains(active);
+                    return name.endsWith(".properties") && name.contains("-") && name.substring(name.indexOf("-") + 1, name.indexOf(".")).equals(active);
                 }
             });
             if (activeFiles != null && activeFiles.length > 0) {
