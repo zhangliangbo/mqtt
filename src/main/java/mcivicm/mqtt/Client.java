@@ -47,11 +47,23 @@ public class Client {
         }
         String host = System.getProperty("host", "tcp://10.1.1.122:1883");
         String id = System.getProperty("id", "mqtt");
+        String username = System.getProperty("username", "admin");
+        String password = System.getProperty("password", "public");
         String publish_topic = System.getProperty("publish_topic", "mqtt_publish");
         String subscribe_topic = System.getProperty("subscribe_topic", "mqtt_subscribe");
-        System.out.println("host=" + host + "|id=" + id + "|publish_topic=" + publish_topic + "|subscribe_topic=" + subscribe_topic);
-
-        MQTT.instance().connect(new IOptions.Builder().setHost(host).setId(id).build()).blockingAwait();
+        System.out.println("host=" + host +
+                "|username=" + username +
+                "|password=" + password +
+                "|id=" + id +
+                "|publish_topic=" + publish_topic +
+                "|subscribe_topic=" + subscribe_topic);
+        MQTT.instance().connect(new IOptions.Builder()
+                .setHost(host)
+                .setUsername(username)
+                .setPassword(password)
+                .setId(id)
+                .build())
+                .blockingAwait();
         final Disposable[] disposable = new Disposable[1];
         MQTT.instance().subscribeWithTopic(subscribe_topic, 1).subscribe(new Observer<Pair<String, MqttMessage>>() {
             @Override
