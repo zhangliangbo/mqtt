@@ -51,12 +51,12 @@ public class Client {
         String password = System.getProperty("password", "public");
         String publish_topic = System.getProperty("publish_topic", "mqtt_publish");
         String subscribe_topic = System.getProperty("subscribe_topic", "mqtt_subscribe");
-        System.out.println("host=" + host +
-                "|username=" + username +
-                "|password=" + password +
-                "|id=" + id +
-                "|publish_topic=" + publish_topic +
-                "|subscribe_topic=" + subscribe_topic);
+        System.out.println(">>host=" + host);
+        System.out.println(">>username=" + username);
+        System.out.println(">>password=" + password);
+        System.out.println(">>id=" + id);
+        System.out.println(">>publish_topic=" + publish_topic);
+        System.out.println(">>subscribe_topic=" + subscribe_topic);
         IOptions iOptions = new IOptions.Builder().setHost(host).setId(id).build();
         iOptions.getOptions().setUserName(username);
         iOptions.getOptions().setPassword(password.toCharArray());
