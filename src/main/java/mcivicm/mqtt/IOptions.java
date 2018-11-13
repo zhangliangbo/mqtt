@@ -1,5 +1,9 @@
 package mcivicm.mqtt;
 
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
 public interface IOptions {
     /**
      * 服务器主机地址
@@ -16,51 +20,27 @@ public interface IOptions {
      */
     String getClientId();
 
+
     /**
-     * 用户名
+     * 序列化方式
      *
      * @return
      */
-    String getUsername();
+    MqttClientPersistence getPersinstence();
 
     /**
-     * 是否清空会话
+     * 选项
      *
      * @return
      */
-    boolean getCleanSession();
-
-
-    /**
-     * 密码
-     *
-     * @return
-     */
-    String getPassword();
-
-    /**
-     * 连接超时时间，秒
-     *
-     * @return
-     */
-    int getConnectionTimeout();
-
-    /**
-     * 发送心跳间隔，秒
-     *
-     * @return
-     */
-    int getKeepAliveInterval();
+    MqttConnectOptions getOptions();
 
     class Builder {
 
         private String host = "tcp://localhost:1883";
         private String id = "client";
-        private String username = "admin";
-        private String password = "public";
-        private int connectionTimeout = 6;
-        private int keepAliveInterval = 20;
-        private boolean cleanSession=true;
+        private MqttClientPersistence persistence = new MemoryPersistence();
+        private MqttConnectOptions options = new MqttConnectOptions();
 
         public IOptions build() {
             return new IOptions() {
@@ -75,29 +55,16 @@ public interface IOptions {
                 }
 
                 @Override
-                public String getUsername() {
-                    return username;
+                public MqttClientPersistence getPersinstence() {
+                    return persistence;
                 }
 
                 @Override
-                public String getPassword() {
-                    return password;
+                public MqttConnectOptions getOptions() {
+                    return options;
                 }
 
-                @Override
-                public int getConnectionTimeout() {
-                    return connectionTimeout;
-                }
 
-                @Override
-                public int getKeepAliveInterval() {
-                    return keepAliveInterval;
-                }
-
-                @Override
-                public boolean getCleanSession() {
-                    return cleanSession;
-                }
             };
         }
 
@@ -111,28 +78,13 @@ public interface IOptions {
             return this;
         }
 
-        public Builder setUsername(String username) {
-            this.username = username;
+        public Builder setPersistence(MqttClientPersistence persistence) {
+            this.persistence = persistence;
             return this;
         }
 
-        public Builder setPassword(String password) {
-            this.password = password;
-            return this;
-        }
-
-        public Builder setConnectionTimeout(int connectionTimeout) {
-            this.connectionTimeout = connectionTimeout;
-            return this;
-        }
-
-        public Builder setKeepAliveInterval(int keepAliveInterval) {
-            this.keepAliveInterval = keepAliveInterval;
-            return this;
-        }
-
-        public Builder setCleanSession(boolean cleanSession) {
-            this.cleanSession = cleanSession;
+        public Builder setOptions(MqttConnectOptions options) {
+            this.options = options;
             return this;
         }
     }

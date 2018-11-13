@@ -57,13 +57,10 @@ public class Client {
                 "|id=" + id +
                 "|publish_topic=" + publish_topic +
                 "|subscribe_topic=" + subscribe_topic);
-        MQTT.instance().connect(new IOptions.Builder()
-                .setHost(host)
-                .setUsername(username)
-                .setPassword(password)
-                .setId(id)
-                .build())
-                .blockingAwait();
+        IOptions iOptions = new IOptions.Builder().setHost(host).setId(id).build();
+        iOptions.getOptions().setUserName(username);
+        iOptions.getOptions().setPassword(password.toCharArray());
+        MQTT.instance().connect(iOptions).blockingAwait();
         final Disposable[] disposable = new Disposable[1];
         MQTT.instance().subscribeWithTopic(subscribe_topic, 1).subscribe(new Observer<Pair<String, MqttMessage>>() {
             @Override
