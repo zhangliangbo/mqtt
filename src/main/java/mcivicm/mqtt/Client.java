@@ -62,7 +62,7 @@ public class Client {
         iOptions.getOptions().setPassword(password.toCharArray());
         MQTT.instance().connect(iOptions).blockingAwait();
         final Disposable[] disposable = new Disposable[1];
-        MQTT.instance().subscribeWithTopic(subscribe_topic, 1).subscribe(new Observer<Pair<String, MqttMessage>>() {
+        MQTT.instance().subscribeWithTopic(subscribe_topic, 2).subscribe(new Observer<Pair<String, MqttMessage>>() {
             @Override
             public void onSubscribe(Disposable d) {
                 disposable[0] = d;
@@ -96,9 +96,9 @@ public class Client {
                 break;
             } else {
                 if ("".equals(line)) {
-                    MQTT.instance().publish(publish_topic, null, 1).blockingAwait();
+                    MQTT.instance().publish(publish_topic, null, 2).blockingAwait();
                 } else {
-                    MQTT.instance().publish(publish_topic, line, 1).blockingAwait();
+                    MQTT.instance().publish(publish_topic, line, 2).blockingAwait();
                 }
             }
         }
