@@ -26,7 +26,7 @@ public interface IOptions {
      *
      * @return
      */
-    MqttClientPersistence getPersinstence();
+    MqttClientPersistence getPersistence();
 
     /**
      * 选项
@@ -55,7 +55,7 @@ public interface IOptions {
                 }
 
                 @Override
-                public MqttClientPersistence getPersinstence() {
+                public MqttClientPersistence getPersistence() {
                     return persistence;
                 }
 

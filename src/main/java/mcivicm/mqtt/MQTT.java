@@ -8,7 +8,6 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.*;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class MQTT {
     /**
@@ -41,7 +40,7 @@ public class MQTT {
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                iMqttClient = new MqttClient(iOptions.getHost(), iOptions.getClientId(), new MemoryPersistence());
+                iMqttClient = new MqttClient(iOptions.getHost(), iOptions.getClientId(), iOptions.getPersistence());
                 //设置mqtt回调
                 if (mqttCallback != null) {
                     iMqttClient.setCallback(mqttCallback);
