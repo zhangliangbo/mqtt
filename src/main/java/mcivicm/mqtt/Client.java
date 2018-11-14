@@ -79,7 +79,7 @@ public class Client {
 
             }
         });
-        //执行连接
+        //连接
         MQTT.instance().connect(iOptions).blockingAwait();
         final Disposable[] disposable = new Disposable[1];
         //订阅
