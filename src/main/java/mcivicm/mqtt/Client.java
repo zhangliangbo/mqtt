@@ -3,6 +3,8 @@ package mcivicm.mqtt;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.*;
@@ -60,8 +62,27 @@ public class Client {
         IOptions iOptions = new IOptions.Builder().setHost(host).setId(id).build();
         iOptions.getOptions().setUserName(username);
         iOptions.getOptions().setPassword(password.toCharArray());
+        iOptions.getOptions().setAutomaticReconnect(true);
+        MQTT.instance().setMqttCallback(new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
+                System.err.println(cause.getMessage());
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
+        //执行连接
         MQTT.instance().connect(iOptions).blockingAwait();
         final Disposable[] disposable = new Disposable[1];
+        //订阅
         MQTT.instance().subscribeWithTopic(subscribe_topic, 2).subscribe(new Observer<Pair<String, MqttMessage>>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -95,6 +116,7 @@ public class Client {
                 MQTT.instance().disconnect().blockingAwait();
                 break;
             } else {
+                //发送
                 if ("".equals(line)) {
                     MQTT.instance().publish(publish_topic, null, 2).blockingAwait();
                 } else {
