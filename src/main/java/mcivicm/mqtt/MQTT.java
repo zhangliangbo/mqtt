@@ -10,21 +10,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.*;
 
 public class MQTT {
-    /**
-     * 静态类持有实例
-     */
-    private static class Holder {
-        static MQTT mqtt = new MQTT();
-    }
-
-    /**
-     * 获取唯一的实例
-     *
-     * @return
-     */
-    public static MQTT instance() {
-        return Holder.mqtt;
-    }
 
     private IMqttClient iMqttClient;
     private IOptions iOptions;

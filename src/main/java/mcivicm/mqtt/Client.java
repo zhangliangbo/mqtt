@@ -59,11 +59,12 @@ public class Client {
         System.out.println(">>id=" + id);
         System.out.println(">>publish_topic=" + publish_topic);
         System.out.println(">>subscribe_topic=" + subscribe_topic);
+        MQTT mqtt = new MQTT();
         IOptions iOptions = new IOptions.Builder().setHost(host).setId(id).build();
         iOptions.getOptions().setUserName(username);
         iOptions.getOptions().setPassword(password.toCharArray());
         iOptions.getOptions().setAutomaticReconnect(true);
-        MQTT.instance().setMqttCallback(new MqttCallback() {
+        mqtt.setMqttCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
                 System.err.println(cause.getMessage());
@@ -80,10 +81,10 @@ public class Client {
             }
         });
         //Á¬½Ó
-        MQTT.instance().connect(iOptions).blockingAwait();
+        mqtt.connect(iOptions).blockingAwait();
         final Disposable[] disposable = new Disposable[1];
         //¶©ÔÄ
-        MQTT.instance().subscribeWithTopic(subscribe_topic, 2).subscribe(new Observer<Pair<String, MqttMessage>>() {
+        mqtt.subscribeWithTopic(subscribe_topic, 2).subscribe(new Observer<Pair<String, MqttMessage>>() {
             @Override
             public void onSubscribe(Disposable d) {
                 disposable[0] = d;
@@ -112,15 +113,15 @@ public class Client {
                 if (disposable[0] != null) {
                     disposable[0].dispose();
                 }
-                MQTT.instance().unsubscribe(publish_topic).blockingAwait();
-                MQTT.instance().disconnect().blockingAwait();
+                mqtt.unsubscribe(publish_topic).blockingAwait();
+                mqtt.disconnect().blockingAwait();
                 break;
             } else {
                 //·¢ËÍ
                 if ("".equals(line)) {
-                    MQTT.instance().publish(publish_topic, null, 2).blockingAwait();
+                    mqtt.publish(publish_topic, null, 2).blockingAwait();
                 } else {
-                    MQTT.instance().publish(publish_topic, line, 2).blockingAwait();
+                    mqtt.publish(publish_topic, line, 2).blockingAwait();
                 }
             }
         }
