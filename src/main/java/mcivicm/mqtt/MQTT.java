@@ -9,6 +9,8 @@ import io.reactivex.functions.Function;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.*;
 
+import java.util.concurrent.Callable;
+
 public class MQTT {
 
     private IMqttClient iMqttClient;
@@ -68,14 +70,11 @@ public class MQTT {
      * @return
      */
     public Completable publish(String topic, String text, int qos, boolean retained) {
-        return Completable.fromAction(new Action() {
-            @Override
-            public void run() throws Exception {
-                MqttTopic mt = iMqttClient.getTopic(topic);
-                MqttDeliveryToken token = mt.publish(text == null ? new byte[0] : text.getBytes(), qos, retained);
-                token.waitForCompletion();
-            }
-        });
+        MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setPayload(text == null ? new byte[0] : text.getBytes());
+        mqttMessage.setQos(qos);
+        mqttMessage.setRetained(retained);
+        return publish(topic, mqttMessage);
     }
 
     /**
@@ -92,6 +91,23 @@ public class MQTT {
                 MqttTopic mt = iMqttClient.getTopic(topic);
                 MqttDeliveryToken token = mt.publish(message);
                 token.waitForCompletion();
+            }
+        });
+    }
+
+    /**
+     * 发布主题，有应答
+     *
+     * @param topic
+     * @param message
+     * @return
+     */
+    public Observable<IMqttDeliveryToken> publishWithResponse(String topic, MqttMessage message) {
+        return Observable.fromCallable(new Callable<IMqttDeliveryToken>() {
+            @Override
+            public IMqttDeliveryToken call() throws Exception {
+                MqttTopic mt = iMqttClient.getTopic(topic);
+                return mt.publish(message);
             }
         });
     }
