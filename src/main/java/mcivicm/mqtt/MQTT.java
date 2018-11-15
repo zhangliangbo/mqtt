@@ -96,6 +96,23 @@ public class MQTT {
     }
 
     /**
+     * 有应答
+     *
+     * @param topic
+     * @param text
+     * @param qos
+     * @param retained
+     * @return
+     */
+    public Observable<IMqttDeliveryToken> publishWithResponse(String topic, String text, int qos, boolean retained) {
+        MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setPayload(text == null ? new byte[0] : text.getBytes());
+        mqttMessage.setQos(qos);
+        mqttMessage.setRetained(retained);
+        return publishWithResponse(topic, mqttMessage);
+    }
+
+    /**
      * 发布主题，有应答
      *
      * @param topic
