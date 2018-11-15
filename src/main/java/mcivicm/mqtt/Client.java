@@ -120,7 +120,11 @@ public class Client {
                 break;
             } else {
                 //发送
-                mqtt.publishWithResponse(publish_topic, "".equals(line) ? null : line, 2, true)
+                MqttMessage mm = new MqttMessage();
+                mm.setRetained(true);
+                mm.setQos(2);
+                mm.setPayload("".equals(line) ? new byte[0] : line.getBytes());
+                mqtt.publishWithResponse(publish_topic, mm)
                         .subscribe(new Observer<IMqttDeliveryToken>() {
                             @Override
                             public void onSubscribe(Disposable d) {
@@ -133,7 +137,7 @@ public class Client {
                                 try {
                                     iMqttDeliveryToken.waitForCompletion();
                                 } catch (MqttException e) {
-                                    System.err.println("发送过程错误:" + e.getMessage());
+                                    System.err.println("等待发送完成错误:" + e.getMessage());
                                 }
                                 if (iMqttDeliveryToken.isComplete()) {
                                     System.out.println("发送成功");
