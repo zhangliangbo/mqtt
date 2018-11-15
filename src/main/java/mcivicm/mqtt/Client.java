@@ -74,12 +74,12 @@ public class Client {
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-
+                System.out.println("messageArrived: " + topic + new String(message.getPayload()));
             }
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                System.out.println("deliveryComplete: " + (token.getException() == null ? "成功" : token.getException().getMessage()));
             }
         });
         //连接
