@@ -140,7 +140,7 @@ public class MQTT {
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                iMqttClient.subscribe(topic);
+                iMqttClient.unsubscribe(topic);
             }
         });
     }
