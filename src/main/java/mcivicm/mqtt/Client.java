@@ -140,9 +140,14 @@ public class Client {
                                     System.err.println("等待发送完成错误:" + e.getMessage());
                                 }
                                 if (iMqttDeliveryToken.isComplete()) {
-                                    System.out.println("发送成功");
+                                    Exception exception = iMqttDeliveryToken.getException();
+                                    if (exception == null) {
+                                        System.out.println("发送成功");
+                                    } else {
+                                        System.err.println("发送错误:" + exception.getMessage());
+                                    }
                                 } else {
-                                    System.err.println("发送错误:" + iMqttDeliveryToken.getException().getMessage());
+                                    System.err.println("发送未完成");
                                 }
                             }
 
