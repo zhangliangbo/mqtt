@@ -5,6 +5,7 @@ import io.reactivex.disposables.Disposable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.*;
@@ -119,11 +120,38 @@ public class Client {
                 break;
             } else {
                 //发送
-                if ("".equals(line)) {
-                    mqtt.publish(publish_topic, null, 2).blockingAwait();
-                } else {
-                    mqtt.publish(publish_topic, line, 2).blockingAwait();
-                }
+                mqtt.publishWithResponse(publish_topic, "".equals(line) ? null : line, 2, true)
+                        .subscribe(new Observer<IMqttDeliveryToken>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onNext(IMqttDeliveryToken iMqttDeliveryToken) {
+                                //等待执行结束
+                                try {
+                                    iMqttDeliveryToken.waitForCompletion();
+                                } catch (MqttException e) {
+                                    System.err.println("发送过程错误:" + e.getMessage());
+                                }
+                                if (iMqttDeliveryToken.isComplete()) {
+                                    System.out.println("发送成功");
+                                } else {
+                                    System.err.println("发送错误:" + iMqttDeliveryToken.getException().getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        });
             }
         }
         System.exit(1);
