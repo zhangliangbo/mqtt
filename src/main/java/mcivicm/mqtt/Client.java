@@ -9,6 +9,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.*;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Client {
     public static void main(String[] args) throws IOException {
@@ -82,12 +83,12 @@ public class Client {
         });
         //Á¬½Ó
         mqtt.connect(iOptions).blockingAwait();
-        final Disposable[] disposable = new Disposable[1];
+        AtomicReference<Disposable> disposable = new AtomicReference<>();
         //¶©ÔÄ
         mqtt.subscribeWithTopic(subscribe_topic, 2).subscribe(new Observer<Pair<String, MqttMessage>>() {
             @Override
             public void onSubscribe(Disposable d) {
-                disposable[0] = d;
+                disposable.set(d);
             }
 
             @Override
@@ -110,8 +111,8 @@ public class Client {
             System.out.println("enter quit to quit: ");
             String line = scanner.nextLine();
             if ("quit".equals(line)) {
-                if (disposable[0] != null) {
-                    disposable[0].dispose();
+                if (disposable.get() != null) {
+                    disposable.get().dispose();
                 }
                 mqtt.unsubscribe(publish_topic).blockingAwait();
                 mqtt.disconnect().blockingAwait();
