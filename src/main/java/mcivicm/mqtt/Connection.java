@@ -7,6 +7,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -131,8 +132,12 @@ public class Connection {
                     public IOptions call() throws Exception {
                         //配置参数
                         IOptions iOptions = new IOptions.Builder().setHost(host).setId(clientId).build();
-                        iOptions.getOptions().setUserName(username);
-                        iOptions.getOptions().setPassword(password.toCharArray());
+                        if (!StringUtils.isEmpty(username)) {
+                            iOptions.getOptions().setUserName(username);
+                        }
+                        if (!StringUtils.isEmpty(password)) {
+                            iOptions.getOptions().setPassword(password.toCharArray());
+                        }
                         return iOptions;
                     }
                 })
