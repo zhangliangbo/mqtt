@@ -5,10 +5,12 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.LinkedList;
@@ -75,6 +77,22 @@ public class Connection {
                         @Override
                         public void accept(IMqttDeliveryToken iMqttDeliveryToken) throws Exception {
                             iMqttDeliveryToken.waitForCompletion();
+                            if (iMqttDeliveryToken.getException() != null) {
+                                //判断当前的连接状态
+                                if (isConnected.get() == 2) {
+                                    //抛出异常给下游，触发重试机制
+                                    throw iMqttDeliveryToken.getException();
+                                } else {
+                                    //未连接状态下直接放入缓存中
+                                    toPublish.add(Pair.of(topic, mqttMessage));
+                                }
+                            }
+                        }
+                    })
+                    .retry(new Predicate<Throwable>() {
+                        @Override
+                        public boolean test(Throwable throwable) throws Exception {
+                            return throwable instanceof MqttException;
                         }
                     })
                     .subscribeOn(scheduler);
