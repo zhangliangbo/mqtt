@@ -22,12 +22,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Connection {
+
+    private boolean reconnectQ = true;
+
     private String host;
     private String clientId;
     private String username;
     private String password;
     //0未连接，1正在连接，2已连接
-    private AtomicInteger isConnected = new AtomicInteger(0);
+    private AtomicInteger connectedQ = new AtomicInteger(0);
     private OnConnectionListener listener;
     private MQTT mqtt = new MQTT();
     private Scheduler scheduler = Schedulers.from(Executors.newSingleThreadExecutor());
@@ -42,8 +45,10 @@ public class Connection {
         this.mqtt.setMqttCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
-                isConnected.set(0);
-                connectTask().subscribe(new SimpleCompletableObserver());
+                connectedQ.set(0);
+                if (reconnectQ) {
+                    connectTask().subscribe(new SimpleCompletableObserver());
+                }
             }
 
             @Override
@@ -61,7 +66,13 @@ public class Connection {
     }
 
     public Completable disconnect() {
+        //强制关闭连接后不重新连接
+        reconnectQ = false;
         return this.mqtt.disconnect().subscribeOn(scheduler);
+    }
+
+    public int getConnectedQ() {
+        return connectedQ.get();
     }
 
     /**
@@ -72,7 +83,7 @@ public class Connection {
      * @return
      */
     public Observable<IMqttDeliveryToken> publish(String topic, MqttMessage mqttMessage) {
-        if (isConnected.get() == 2) {
+        if (connectedQ.get() == 2) {
             return mqtt.publishWithResponse(topic, mqttMessage)
                     .doOnNext(new Consumer<IMqttDeliveryToken>() {
                         @Override
@@ -80,7 +91,7 @@ public class Connection {
                             iMqttDeliveryToken.waitForCompletion();
                             if (iMqttDeliveryToken.getException() != null) {
                                 //判断当前的连接状态
-                                if (isConnected.get() == 2) {
+                                if (connectedQ.get() == 2) {
                                     //抛出异常给下游，触发重试机制
                                     throw iMqttDeliveryToken.getException();
                                 } else {
@@ -113,7 +124,7 @@ public class Connection {
      * @return
      */
     public Observable<Pair<String, MqttMessage>> subscribe(final String topic, final int qos) {
-        if (isConnected.get() == 2) {
+        if (connectedQ.get() == 2) {
             return mqtt.subscribeWithTopic(topic, qos).subscribeOn(scheduler);
         } else {
             return Observable.empty();
@@ -150,13 +161,13 @@ public class Connection {
                                 .doOnSubscribe(new Consumer<Disposable>() {
                                     @Override
                                     public void accept(Disposable disposable) throws Exception {
-                                        isConnected.set(1);
+                                        connectedQ.set(1);
                                     }
                                 })
                                 .doOnComplete(new Action() {
                                     @Override
                                     public void run() throws Exception {
-                                        isConnected.set(2);
+                                        connectedQ.set(2);
                                         //发送连接成功的消息
                                         if (listener != null) {
                                             //订阅该订阅的主题
@@ -168,7 +179,7 @@ public class Connection {
                                 .doOnError(new Consumer<Throwable>() {
                                     @Override
                                     public void accept(Throwable throwable) throws Exception {
-                                        isConnected.set(0);
+                                        connectedQ.set(0);
                                     }
                                 });
                     }

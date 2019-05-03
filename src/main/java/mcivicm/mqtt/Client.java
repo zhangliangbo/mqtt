@@ -1,7 +1,9 @@
 package mcivicm.mqtt;
 
+import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -9,11 +11,58 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Client {
+    private static void publish(MQTT mqtt, String topic, String line) {
+        //发送
+        MqttMessage mm = new MqttMessage();
+        mm.setRetained(true);
+        mm.setQos(2);
+        mm.setPayload("".equals(line) ? new byte[0] : line.getBytes(Charset.forName("UTF8")));
+        mqtt.publishWithResponse(topic, mm)
+                .subscribe(new Observer<IMqttDeliveryToken>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(IMqttDeliveryToken iMqttDeliveryToken) {
+                        //等待执行结束
+                        try {
+                            iMqttDeliveryToken.waitForCompletion();
+                        } catch (MqttException e) {
+                            System.err.println("wait for completion error.:" + e.getMessage());
+                        }
+                        if (iMqttDeliveryToken.isComplete()) {
+                            Exception exception = iMqttDeliveryToken.getException();
+                            if (exception == null) {
+                                System.out.println("delivery success.");
+                            } else {
+                                System.err.println("delivery error.:" + exception.getMessage());
+                            }
+                        } else {
+                            System.err.println("delivery not complete.");
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
     public static void main(String[] args) throws IOException {
         String name = "application.properties";
         InputStream inner = Client.class.getClassLoader().getResourceAsStream(name);
@@ -75,7 +124,7 @@ public class Client {
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                System.out.println("from callback : " + topic + new String(message.getPayload()));
+
             }
 
             @Override
@@ -96,12 +145,13 @@ public class Client {
             @Override
             public void onNext(Pair<String, MqttMessage> pair) {
                 System.out.println(pair.getKey() + "-" + Arrays.toString(pair.getValue().getPayload()));
-                System.out.println(pair.getKey() + "-" + new String(pair.getValue().getPayload()));
+                System.out.println(pair.getKey() + "-" + new String(pair.getValue().getPayload(),Charset.forName("UTF8")));
             }
 
             @Override
             public void onError(Throwable e) {
-                System.out.println(e.getMessage());
+                System.out.println("error " + e.getMessage());
+                mqtt.disconnect().blockingAwait();
             }
 
             @Override
@@ -110,61 +160,54 @@ public class Client {
             }
         });
         Scanner scanner = new Scanner(System.in);
+        AtomicReference<Disposable> disposableAtomicReference = new AtomicReference<>();
         while (true) {
             System.out.println("enter quit to quit: ");
             String line = scanner.nextLine();
-            if ("quit".equals(line)) {
-                if (disposable.get() != null) {
-                    disposable.get().dispose();
+            if (!StringUtils.isEmpty(line)) {
+                if (disposableAtomicReference.get() != null) {
+                    disposableAtomicReference.get().dispose();
+                    disposableAtomicReference.set(null);
                 }
-                mqtt.unsubscribe(publish_topic).blockingAwait();
-                mqtt.disconnect().blockingAwait();
-                break;
-            } else {
-                //发送
-                MqttMessage mm = new MqttMessage();
-                mm.setRetained(true);
-                mm.setQos(2);
-                mm.setPayload("".equals(line) ? new byte[0] : line.getBytes());
-                mqtt.publishWithResponse(publish_topic, mm)
-                        .subscribe(new Observer<IMqttDeliveryToken>() {
-                            @Override
-                            public void onSubscribe(Disposable d) {
-
-                            }
-
-                            @Override
-                            public void onNext(IMqttDeliveryToken iMqttDeliveryToken) {
-                                //等待执行结束
-                                try {
-                                    iMqttDeliveryToken.waitForCompletion();
-                                } catch (MqttException e) {
-                                    System.err.println("wait for completion error.:" + e.getMessage());
-                                }
-                                if (iMqttDeliveryToken.isComplete()) {
-                                    Exception exception = iMqttDeliveryToken.getException();
-                                    if (exception == null) {
-                                        System.out.println("delivery success.");
-                                    } else {
-                                        System.err.println("delivery error.:" + exception.getMessage());
+                if ("quit".equals(line)) {
+                    if (disposable.get() != null) {
+                        disposable.get().dispose();
+                    }
+                    mqtt.unsubscribe(publish_topic).blockingAwait();
+                    mqtt.disconnect().blockingAwait();
+                    break;
+                } else if (line.startsWith("interval")) {
+                    String[] ps = line.split(" ");
+                    if (ps.length >= 3) {
+                        Observable.interval(0, Integer.parseInt(ps[1]), TimeUnit.SECONDS)
+                                .subscribe(new Observer<Long>() {
+                                    @Override
+                                    public void onSubscribe(Disposable d) {
+                                        disposableAtomicReference.set(d);
                                     }
-                                } else {
-                                    System.err.println("delivery not complete.");
-                                }
-                            }
 
-                            @Override
-                            public void onError(Throwable e) {
+                                    @Override
+                                    public void onNext(Long aLong) {
+                                        publish(mqtt, publish_topic, ps[2] + ":" + aLong);
+                                    }
 
-                            }
+                                    @Override
+                                    public void onError(Throwable e) {
 
-                            @Override
-                            public void onComplete() {
+                                    }
 
-                            }
-                        });
+                                    @Override
+                                    public void onComplete() {
+
+                                    }
+                                });
+                    }
+                } else {
+                    publish(mqtt, publish_topic, line);
+                }
             }
         }
         System.exit(1);
     }
+
 }
